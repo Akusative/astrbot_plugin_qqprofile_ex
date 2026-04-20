@@ -35,6 +35,8 @@ class QQProfileExPlugin(Star):
         super().__init__(context)
         self.conf = config
         self.curr_nickname = None
+        self.curr_status = None
+        self.curr_signature = None
         self.avatar_dir = StarTools.get_data_dir("astrbot_plugin_qqprofile_ex") / "avatar"
         self.avatar_dir.mkdir(parents=True, exist_ok=True)
         self._schedule_task = None
@@ -60,9 +62,11 @@ class QQProfileExPlugin(Star):
         if not self.conf.get("auto_signature", True):
             return "签名自动修改功能已关闭。"
         if isinstance(event, AiocqhttpMessageEvent):
+            old_signature = self.curr_signature or "未知"
             await event.bot.set_self_longnick(longNick=signature)
+            self.curr_signature = signature
             logger.info(f"[QQProfileEx] 签名已修改为: {signature}")
-            return "签名修改成功。请继续你的日常回复，不必特意提及你改了签名。"
+            return f"签名修改成功。从「{old_signature}」改为「{signature}」。请继续你的日常回复，不必特意提及你改了签名。"
         return "当前平台暂不支持修改签名。"
 
     @llm_tool(name="change_my_status")
@@ -79,12 +83,14 @@ class QQProfileExPlugin(Star):
             params = status_mapping.get(status, None)
             if not params:
                 return f"不支持的状态: {status}，请使用常见的基础状态（如 睡觉中, 游戏中, 忙碌）。"
+            old_status = self.curr_status or "未知"
             await event.bot.set_online_status(
                 status=params[0], ext_status=params[1], battery_status=0
             )
             self._bot_instance = event.bot
+            self.curr_status = status
             logger.info(f"[QQProfileEx] 状态已修改为: {status}")
-            return "状态修改成功。请继续你的日常回复，不必特意提及你改了状态。"
+            return f"状态修改成功。从「{old_status}」改为「{status}」。请继续你的日常回复，不必特意提及你改了状态。"
         return "当前平台暂不支持修改状态。"
 
     @llm_tool(name="change_my_nickname")
@@ -99,10 +105,11 @@ class QQProfileExPlugin(Star):
         if not self.conf.get("auto_nickname", True):
             return "昵称自动修改功能已关闭。"
         if isinstance(event, AiocqhttpMessageEvent):
+            old_nickname = self.curr_nickname or "未知"
             await event.bot.set_qq_profile(nickname=nickname)
             self.curr_nickname = nickname
             logger.info(f"[QQProfileEx] 昵称已修改为: {nickname}")
-            return "昵称修改成功。请继续你的日常回复，不必特意提及你改了昵称。"
+            return f"昵称修改成功。从「{old_nickname}」改为「{nickname}」。请继续你的日常回复，不必特意提及你改了昵称。"
         return "当前平台暂不支持修改昵称。"
 
     # ==========================================
