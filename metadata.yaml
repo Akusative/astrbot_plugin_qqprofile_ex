@@ -2,7 +2,7 @@ name: astrbot_plugin_qqprofile_ex
 display_name: QQ资料管理Ex
 desc: "基于 Zhalslar 的 astrbot_plugin_qqprofile 扩展。新增AI自主改签名/状态/昵称 + 定时状态切换。[仅aiocqhttp]"
 help: 略
-version: v1.0.0
+version: v2.0.1
 author: 菀菀
 repo: ""
 star_cls_name: QQProfileExPlugin
