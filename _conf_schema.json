@@ -1,0 +1,44 @@
+{
+    "sync_name": {
+        "description": "自动同步昵称",
+        "hint": "切换人格时自动同步bot的QQ昵称为人格名称",
+        "type": "bool",
+        "default": true
+    },
+    "sync_avatar": {
+        "description": "自动同步头像",
+        "hint": "切换人格时自动同步bot的QQ头像",
+        "type": "bool",
+        "default": true
+    },
+    "auto_signature": {
+        "description": "AI自动改签名",
+        "hint": "允许AI根据心情自动修改QQ个性签名",
+        "type": "bool",
+        "default": true
+    },
+    "auto_status": {
+        "description": "AI自动改状态",
+        "hint": "允许AI根据情境自动修改QQ在线状态",
+        "type": "bool",
+        "default": true
+    },
+    "auto_nickname": {
+        "description": "AI自动改昵称",
+        "hint": "允许AI根据情境自动修改QQ昵称",
+        "type": "bool",
+        "default": true
+    },
+    "enable_schedule": {
+        "description": "启用定时状态切换",
+        "hint": "按时间段自动切换在线状态, 需配置下方的时间表",
+        "type": "bool",
+        "default": false
+    },
+    "status_schedule": {
+        "description": "定时状态时间表",
+        "hint": "JSON格式, 如 {\"23-7\": \"睡觉中\", \"9-18\": \"在线\"}。时间段支持跨午夜",
+        "type": "text",
+        "default": "{\"23-7\": \"睡觉中\", \"7-9\": \"吃饭中\", \"9-18\": \"在线\", \"18-23\": \"游戏中\"}"
+    }
+}
