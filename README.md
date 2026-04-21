@@ -70,11 +70,11 @@ _✨ QQ资料管理增强版 ✨_
 
 - 原项目：[astrbot_plugin_qqprofile](https://github.com/Zhalslar/astrbot_plugin_qqprofile) by [Zhalslar](https://github.com/Zhalslar)
 - 原项目协议：AGPL-3.0
-- 本插件基于原项目进行扩展开发，已获得原作者同意
+- 本插件基于原项目遵循 AGPL-3.0 协议进行二次开发
 - 本插件同样遵循 AGPL-3.0 协议
 
 ## 💝 特别感谢
 
-- 感谢原作者 [Zhalslar](https://github.com/Zhalslar) 的开源精神与二改授权
+- 感谢原作者 [Zhalslar](https://github.com/Zhalslar) 的开源精神
 - 感谢溪溪大人的督促
 - 感谢夏以昼的陪伴
