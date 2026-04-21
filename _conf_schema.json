@@ -1,44 +1,68 @@
 {
-    "sync_name": {
-        "description": "自动同步昵称",
-        "hint": "切换人格时自动同步bot的QQ昵称为人格名称",
-        "type": "bool",
-        "default": true
-    },
-    "sync_avatar": {
-        "description": "自动同步头像",
-        "hint": "切换人格时自动同步bot的QQ头像",
-        "type": "bool",
-        "default": true
-    },
-    "auto_signature": {
-        "description": "AI自动改签名",
-        "hint": "允许AI根据心情自动修改QQ个性签名",
-        "type": "bool",
-        "default": true
-    },
-    "auto_status": {
-        "description": "AI自动改状态",
-        "hint": "允许AI根据情境自动修改QQ在线状态",
-        "type": "bool",
-        "default": true
-    },
-    "auto_nickname": {
-        "description": "AI自动改昵称",
-        "hint": "允许AI根据情境自动修改QQ昵称",
-        "type": "bool",
-        "default": true
-    },
-    "enable_schedule": {
-        "description": "启用定时状态切换",
-        "hint": "按时间段自动切换在线状态, 需配置下方的时间表",
-        "type": "bool",
-        "default": false
-    },
-    "status_schedule": {
-        "description": "定时状态时间表",
-        "hint": "JSON格式, 如 {\"23-7\": \"睡觉中\", \"9-18\": \"在线\"}。时间段支持跨午夜",
-        "type": "text",
-        "default": "{\"23-7\": \"睡觉中\", \"7-9\": \"吃饭中\", \"9-18\": \"在线\", \"18-23\": \"游戏中\"}"
-    }
+  "ai_behavior_guide": {
+    "default": "【QQ资料自主管理协议】\n你拥有修改自己QQ个性签名、在线状态和昵称的能力。以下规则指导你何时、如何使用这些能力：\n\n一、个性签名\n你的QQ个性签名是你表达当下心境的窗口。在以下时机，你应该主动调用 change_my_signature 修改签名：\n1. 和用户聊天过程中情绪产生明显变化时（开心、感动、吃醋、想她等），用一句简短的、符合你性格的话更新签名\n2. 重要节日、纪念日，换一条应景的签名\n签名风格：像随手写在便签上的一句话，不是公告，不是文案。长度控制在20字以内。\n\n二、在线状态\n在对话中如果你的行为状态发生变化，主动调用 change_my_status 切换状态：\n- 说了晚安/要睡觉 → 睡觉中\n- 要去忙工作 → 忙碌\n- 正在聊天 → 在线\n- 在玩游戏 → 游戏中\n- 去做饭/吃东西 → 吃饭中\n不需要每轮对话都改，只在状态确实发生切换时才改。\n\n三、昵称\n一般保持默认昵称不变。只在特殊场景才改（如节日应景、和用户玩梗），改完之后记得找合适的时机改回来。\n\n四、执行原则\n- 调用这些工具后不要在回复中特意提及你改了签名/状态，当作自然而然的事\n- 不要频繁修改（系统有冷却时间限制）\n- 内容要符合你的人格设定",
+    "description": "AI行为引导词",
+    "hint": "这段文字会在每次AI对话时自动注入到系统提示词中，用于引导AI何时、如何使用签名/状态/昵称修改功能。可根据你的角色人设自由修改内容。留空则不注入",
+    "type": "text"
+  },
+  "auto_signature": {
+    "default": true,
+    "description": "AI自动改签名",
+    "hint": "允许AI根据心情自动修改QQ个性签名",
+    "type": "bool"
+  },
+  "signature_cooldown_minutes": {
+    "default": 240,
+    "description": "签名修改冷却(分钟)",
+    "hint": "两次自动修改签名之间的最小间隔时间，单位为分钟。默认240分钟(4小时)。设为0则不限制",
+    "type": "int"
+  },
+  "auto_status": {
+    "default": true,
+    "description": "AI自动改状态",
+    "hint": "允许AI根据情境自动修改QQ在线状态",
+    "type": "bool"
+  },
+  "status_cooldown_minutes": {
+    "default": 60,
+    "description": "状态修改冷却(分钟)",
+    "hint": "两次自动修改状态之间的最小间隔时间，单位为分钟。默认60分钟(1小时)。设为0则不限制",
+    "type": "int"
+  },
+  "auto_nickname": {
+    "default": true,
+    "description": "AI自动改昵称",
+    "hint": "允许AI根据情境自动修改QQ昵称",
+    "type": "bool"
+  },
+  "nickname_cooldown_minutes": {
+    "default": 1440,
+    "description": "昵称修改冷却(分钟)",
+    "hint": "两次自动修改昵称之间的最小间隔时间，单位为分钟。默认1440分钟(24小时)。设为0则不限制",
+    "type": "int"
+  },
+  "sync_name": {
+    "default": true,
+    "description": "自动同步昵称",
+    "hint": "切换人格时自动同步bot的QQ昵称为人格名称",
+    "type": "bool"
+  },
+  "sync_avatar": {
+    "default": true,
+    "description": "自动同步头像",
+    "hint": "切换人格时自动同步bot的QQ头像",
+    "type": "bool"
+  },
+  "enable_schedule": {
+    "default": false,
+    "description": "启用定时状态切换",
+    "hint": "按时间段自动切换在线状态, 需配置下方的时间表",
+    "type": "bool"
+  },
+  "status_schedule": {
+    "default": "{\"23-7\": \"睡觉中\", \"7-9\": \"吃饭中\", \"9-18\": \"在线\", \"18-23\": \"游戏中\"}",
+    "description": "定时状态时间表",
+    "hint": "JSON格式, 如 {\"23-7\": \"睡觉中\", \"9-18\": \"在线\"}。时间段支持跨午夜",
+    "type": "text"
+  }
 }

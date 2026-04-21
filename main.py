@@ -13,6 +13,7 @@
 # ============================================================
 
 import asyncio
+import time
 import astrbot.api.message_components as Comp
 from astrbot import logger
 from astrbot.api.event import filter
@@ -25,6 +26,8 @@ from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import (
 from astrbot.core.star.filter.permission import PermissionType
 from astrbot.core.star.star_tools import StarTools
 from astrbot.api.all import llm_tool
+from astrbot.api.event.filter import on_llm_request
+from astrbot.api.provider import ProviderRequest
 
 from .status import status_mapping
 from .utils import download_image, get_nickname
@@ -42,10 +45,37 @@ class QQProfileExPlugin(Star):
         self._schedule_task = None
         self._bot_instance = None
 
+        # 冷却时间记录 (时间戳)
+        self._last_signature_change = 0.0
+        self._last_status_change = 0.0
+        self._last_nickname_change = 0.0
+
         # 启动定时状态切换
         if self.conf.get("enable_schedule", False):
             self._schedule_task = asyncio.create_task(self._status_schedule_loop())
             logger.info("[QQProfileEx] 定时状态切换已启动")
+
+    def _check_cooldown(self, last_time: float, cooldown_key: str) -> str | None:
+        """检查冷却时间，返回 None 表示可以修改，返回字符串表示冷却中的提示"""
+        cooldown_minutes = self.conf.get(cooldown_key, 240)  # 默认240分钟(4小时)
+        cooldown_seconds = cooldown_minutes * 60
+        elapsed = time.time() - last_time
+        if elapsed < cooldown_seconds:
+            remaining = int((cooldown_seconds - elapsed) / 60)
+            return f"冷却中，距离下次可修改还需 {remaining} 分钟。请稍后再试。"
+        return None
+
+    # ==========================================
+    # AI 行为引导词注入 (通过 on_llm_request 钩子)
+    # ==========================================
+
+    @on_llm_request()
+    async def inject_profile_guide(self, event: AstrMessageEvent, request: ProviderRequest):
+        """在每次LLM请求前，将配置中的行为引导词注入到system prompt"""
+        guide = self.conf.get("ai_behavior_guide", "").strip()
+        if guide:
+            sep = chr(10) + chr(10)
+            request.system_prompt += sep + guide
 
     # ==========================================
     # AI 自主行为工具 (新增功能)
@@ -55,16 +85,21 @@ class QQProfileExPlugin(Star):
     async def auto_set_signature(self, event: AstrMessageEvent, signature: str):
         """
         当你的心情、想法发生变化时，调用此工具修改你的QQ个性签名。
+        注意：此工具有冷却时间限制，不要频繁调用。
 
         Args:
-            signature (string): 新的QQ个性签名内容。
+            signature (string): 新的QQ个性签名内容，建议20字以内。
         """
         if not self.conf.get("auto_signature", True):
             return "签名自动修改功能已关闭。"
+        cd_msg = self._check_cooldown(self._last_signature_change, "signature_cooldown_minutes")
+        if cd_msg:
+            return f"签名{cd_msg}"
         if isinstance(event, AiocqhttpMessageEvent):
             old_signature = self.curr_signature or "未知"
             await event.bot.set_self_longnick(longNick=signature)
             self.curr_signature = signature
+            self._last_signature_change = time.time()
             logger.info(f"[QQProfileEx] 签名已修改为: {signature}")
             return f"签名修改成功。从「{old_signature}」改为「{signature}」。请继续你的日常回复，不必特意提及你改了签名。"
         return "当前平台暂不支持修改签名。"
@@ -73,12 +108,16 @@ class QQProfileExPlugin(Star):
     async def auto_set_status(self, event: AstrMessageEvent, status: str):
         """
         当你去睡觉、执行任务、玩游戏或情绪起伏时，调用此工具修改QQ在线状态。
+        注意：此工具有冷却时间限制，不要频繁调用。
 
         Args:
             status (string): 支持的状态包括：在线、隐身、离开、忙碌、Q我吧、请勿打扰、睡觉中、游戏中、学习中、吃饭中、听歌中等。
         """
         if not self.conf.get("auto_status", True):
             return "状态自动修改功能已关闭。"
+        cd_msg = self._check_cooldown(self._last_status_change, "status_cooldown_minutes")
+        if cd_msg:
+            return f"状态{cd_msg}"
         if isinstance(event, AiocqhttpMessageEvent):
             params = status_mapping.get(status, None)
             if not params:
@@ -89,6 +128,7 @@ class QQProfileExPlugin(Star):
             )
             self._bot_instance = event.bot
             self.curr_status = status
+            self._last_status_change = time.time()
             logger.info(f"[QQProfileEx] 状态已修改为: {status}")
             return f"状态修改成功。从「{old_status}」改为「{status}」。请继续你的日常回复，不必特意提及你改了状态。"
         return "当前平台暂不支持修改状态。"
@@ -98,16 +138,21 @@ class QQProfileExPlugin(Star):
         """
         当你想要改变自己的称呼、或者根据情境调整昵称时，调用此工具修改你的QQ昵称。
         比如心情好的时候加个后缀、节日的时候换个应景的昵称。
+        注意：此工具有冷却时间限制，不要频繁调用。改完之后记得找合适的时机改回来。
 
         Args:
             nickname (string): 新的QQ昵称。
         """
         if not self.conf.get("auto_nickname", True):
             return "昵称自动修改功能已关闭。"
+        cd_msg = self._check_cooldown(self._last_nickname_change, "nickname_cooldown_minutes")
+        if cd_msg:
+            return f"昵称{cd_msg}"
         if isinstance(event, AiocqhttpMessageEvent):
             old_nickname = self.curr_nickname or "未知"
             await event.bot.set_qq_profile(nickname=nickname)
             self.curr_nickname = nickname
+            self._last_nickname_change = time.time()
             logger.info(f"[QQProfileEx] 昵称已修改为: {nickname}")
             return f"昵称修改成功。从「{old_nickname}」改为「{nickname}」。请继续你的日常回复，不必特意提及你改了昵称。"
         return "当前平台暂不支持修改昵称。"
